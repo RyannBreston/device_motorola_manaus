@@ -1,68 +1,122 @@
-# Inherit from vendor
+#
+# Copyright (C) 2024 The LineageOS Project
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Enable updating of APEXes
+$(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
+
+# A/B
+$(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
+
+PRODUCT_PACKAGES += \
+    android.hardware.boot@1.2-impl \
+    android.hardware.boot@1.2-impl.recovery \
+    android.hardware.boot@1.2-service
+
+PRODUCT_PACKAGES += \
+    update_engine \
+    update_engine_sideload \
+    update_verifier
+
+AB_OTA_POSTINSTALL_CONFIG += \
+    RUN_POSTINSTALL_system=true \
+    POSTINSTALL_PATH_system=system/bin/otapreopt_script \
+    FILESYSTEM_TYPE_system=erofs \
+    POSTINSTALL_OPTIONAL_system=true
+
+AB_OTA_POSTINSTALL_CONFIG += \
+    RUN_POSTINSTALL_vendor=true \
+    POSTINSTALL_PATH_vendor=bin/checkpoint_gc \
+    FILESYSTEM_TYPE_vendor=erofs \
+    POSTINSTALL_OPTIONAL_vendor=true
+
+PRODUCT_PACKAGES += \
+    checkpoint_gc \
+    otapreopt_script
+
+# API levels
+PRODUCT_SHIPPING_API_LEVEL := 33
+
+# fastbootd
+PRODUCT_PACKAGES += \
+    android.hardware.fastboot@1.1-impl-mock \
+    fastbootd
+
+# Health
+PRODUCT_PACKAGES += \
+    android.hardware.health@2.1-impl \
+    android.hardware.health@2.1-service
+
+# Overlays
+PRODUCT_ENFORCE_RRO_TARGETS := *
+
+# Partitions
+PRODUCT_USE_DYNAMIC_PARTITIONS := true
+
+# Product characteristics
+PRODUCT_CHARACTERISTICS := nosdcard
+
+# Rootdir
+PRODUCT_PACKAGES += \
+    apanic_annotate.sh \
+    apanic_copy.sh \
+    apanic_mtk.sh \
+    apanic_save.sh \
+    hardware_revisions.sh \
+    init.insmod.sh \
+    init.mmi.backup.trustlet.sh \
+    init.mmi.block_perm.sh \
+    init.mmi.boot.sh \
+    init.mmi.modules.sh \
+    init.mmi.shutdown.sh \
+    init.mmi.touch.sh \
+    init.mmi.usb.sh \
+    init.oem.fingerprint2.sh \
+    init.oem.hw.sh \
+    pstore_annotate.sh \
+    vendor.mmi.cxp.sh \
+
+PRODUCT_PACKAGES += \
+    fstab.mt6879 \
+    apanic.rc \
+    factory_init.connectivity.common.rc \
+    factory_init.connectivity.rc \
+    factory_init.project.rc \
+    factory_init.rc \
+    init.aee.rc \
+    init.cgroup.rc \
+    init.connectivity.common.rc \
+    init.connectivity.rc \
+    init.mmi.backup.trustlet.rc \
+    init.mmi.chipset.rc \
+    init.mmi.overlay.rc \
+    init.mmi.rc \
+    init.mmi.tcmd.rc \
+    init.mmi.usb.configfs.rc \
+    init.modem.rc \
+    init.mt6879.rc \
+    init.mt6879.usb.rc \
+    init.mtkgki.rc \
+    init.project.rc \
+    init.sensor_2_0.rc \
+    init_conninfra.rc \
+    meta_init.connectivity.common.rc \
+    meta_init.connectivity.rc \
+    meta_init.modem.rc \
+    meta_init.project.rc \
+    meta_init.rc \
+    meta_init.vendor.rc \
+    multi_init.rc \
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/rootdir/etc/fstab.mt6879:$(TARGET_VENDOR_RAMDISK_OUT)/first_stage_ramdisk/fstab.mt6879
+
+
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += \
+    $(LOCAL_PATH)
+
+# Inherit the proprietary files
 $(call inherit-product, vendor/motorola/manaus/manaus-vendor.mk)
-
-# Device characteristics
-PRODUCT_DEVICE := manaus
-PRODUCT_NAME := lineage_manaus
-PRODUCT_BRAND := motorola
-PRODUCT_MODEL := Motorola Edge 40 Neo
-PRODUCT_MANUFACTURER := motorola
-
-# Inherit some common LineageOS stuff
-$(call inherit-product, vendor/lineage/config/common_full_phone.mk)
-
-# Boot animation
-TARGET_SCREEN_HEIGHT := 2400
-TARGET_SCREEN_WIDTH := 1080
-
-# Build info
-PRODUCT_GMS_CLIENTID_BASE := android-motorola
-PRODUCT_BUILD_PROP_OVERRIDES += \
-    PRIVATE_BUILD_DESC="manaus_retail-user 14 U1TMS34.107-34-9-3-1 789012 release-keys" \
-    TARGET_DEVICE=manaus \
-    PRODUCT_NAME=manaus \
-    BUILD_FINGERPRINT=motorola/manaus_retail/manaus:14/U1TMS34.107-34-9-3-1/789012:user/release-keys
-
-# Camera
-PRODUCT_PACKAGES += \
-    libcamera2ndk_vendor \
-    libgui_vendor \
-    android.hardware.camera.provider@2.5-impl \
-    android.hardware.camera.provider@2.5-service_64 \
-    Snap \
-    libstdc++.vendor
-
-PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml \
-    frameworks/native/data/etc/android.hardware.camera.front.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.front.xml \
-    frameworks/native/data/etc/android.hardware.camera.full.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.full.xml \
-    frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.camera.HAL3.enabled=1 \
-    vendor.camera.aux.packagelist=org.lineageos.snap,com.motorola.camera3
-
-# Audio
-PRODUCT_PACKAGES += \
-    audio.primary.mt6877 \
-    audio.usb.default \
-    audio.r_submix.default \
-    libaudiofoundation \
-    libtinyalsa \
-    libtinycompress \
-    libaudiospdif \
-    android.hardware.audio@7.0-impl \
-    android.hardware.audio.service \
-    android.hardware.audio.effect@7.0-impl
-
-PRODUCT_COPY_FILES += \
-    frameworks/av/services/audiopolicy/config/a2dp_in_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_in_audio_policy_configuration_7_0.xml \
-    frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
-    frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
-    frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.audio.stereo=true \
-    ro.audio.usb=true \
-    ro.vendor.audio.sos=true
