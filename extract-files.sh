@@ -32,16 +32,38 @@ if [ ! -f "${HELPER}" ]; then
 fi
 source "${HELPER}"
 
+# Default to sanitizing the vendor folder before extraction
+CLEAN_VENDOR=true
+
+KANG=
+SECTION=
+
+while [ "${#}" -gt 0 ]; do
+    case "${1}" in
+        -n | --no-cleanup )
+                CLEAN_VENDOR=false
+                ;;
+        -k | --kang )
+                KANG="--kang"
+                ;;
+        -s | --section )
+                SECTION="${2}"; shift
+                CLEAN_VENDOR=false
+                ;;
+        * )
+                SRC="${1}"
+                ;;
+    esac
+    shift
+done
+
+if [ -z "${SRC}" ]; then
+    SRC="adb"
+fi
+
 # Initialize the helper
-setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}" false
+setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}" false "${CLEAN_VENDOR}"
 
-# Warning header and verification
-echo '**** WARNING: Ensure you have a working device or firmware dump for blob extraction! ****'
-check_device "${DEVICE}"
+extract "${MY_DIR}/proprietary-files.txt" "${SRC}" "${KANG}" --section "${SECTION}"
 
-# Extract the blobs
-section "Extracting proprietary blobs"
-extract "${MY_DIR}/proprietary-files.txt" "${SRC}" \
-    --section "PARTITION: system vendor"
-
-echo "Blob extraction complete!"
+"${MY_DIR}/setup-makefiles.sh"
