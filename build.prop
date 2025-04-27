@@ -1,0 +1,5 @@
+ro.build.description=manaus_retail-user 14 U1TMS34.107-34-9-3-1 789012 release-keys
+ro.build.fingerprint=motorola/manaus_retail/manaus:14/U1TMS34.107-34-9-3-1/789012:user/release-keys
+ro.product.device=manaus
+ro.build.version.release=14
+ro.build.id=U1TMS34.107-34-9-3-1
